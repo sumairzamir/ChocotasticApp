@@ -38,6 +38,8 @@ class BillingInfoViewController: UIViewController {
   @IBOutlet private var purchaseButton: UIButton!
   
   private let cardType: BehaviorRelay<CardType> = BehaviorRelay(value: .unknown)
+  private let disposeBag = DisposeBag()
+  private let throttleIntervalInMilliseconds = 100
 }
 
 // MARK: - View Lifecycle
@@ -62,6 +64,42 @@ extension BillingInfoViewController {
 
 //MARK: - RX Setup
 private extension BillingInfoViewController {
+  
+  func setupCardImageDisplay() {
+    cardType
+      // Add an observer to the cardType behaviour relay (i.e. list)
+      .asObservable()
+      // Subscribe to the observer on changes to card type
+      .subscribe(onNext: { [unowned self] cardType in
+        // Change the credit card image view based on the card type selected
+        self.creditCardImageView.image = cardType.image
+      })
+      .disposed(by: disposeBag)
+  }
+  
+  func setupTextChangeHandling() {
+  let creditCardValid = creditCardNumberTextField
+    .rx
+    // Return contents of the text field as an observable
+    .text
+    // Observer callbacks are left as an async instance on the main thread
+    .observeOn(MainScheduler.asyncInstance)
+    .distinctUntilChanged()
+    // Check the validation based on the interval set and also only on the main thread
+    .throttle(.milliseconds(throttleIntervalInMilliseconds), scheduler: MainScheduler.instance)
+    .map { [unowned self] in
+      // Check whether the text in the text field is valid
+      self.validate(cardText: $0)
+    }
+    
+    creditCardValid
+      .subscribe(onNext: { [unowned self] in
+        // Use the creditCardValid observable to set the text field valid or not	
+        self.creditCardNumberTextField.valid = $0
+      })
+    .disposed(by: disposeBag)
+  }
+  
 }
 
 //MARK: - Validation methods
