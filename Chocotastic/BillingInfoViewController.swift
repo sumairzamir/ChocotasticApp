@@ -47,6 +47,8 @@ extension BillingInfoViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     title = "💳 Info"
+    setupCardImageDisplay()
+    setupTextChangeHandling()
   }
   
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -78,27 +80,75 @@ private extension BillingInfoViewController {
   }
   
   func setupTextChangeHandling() {
-  let creditCardValid = creditCardNumberTextField
-    .rx
-    // Return contents of the text field as an observable
-    .text
-    // Observer callbacks are left as an async instance on the main thread
-    .observeOn(MainScheduler.asyncInstance)
-    .distinctUntilChanged()
-    // Check the validation based on the interval set and also only on the main thread
-    .throttle(.milliseconds(throttleIntervalInMilliseconds), scheduler: MainScheduler.instance)
-    .map { [unowned self] in
-      // Check whether the text in the text field is valid
-      self.validate(cardText: $0)
+    let creditCardValid = creditCardNumberTextField
+      .rx
+      // Return contents of the text field as an observable
+      .text
+      // Observer callbacks are left as an async instance on the main thread
+      .observeOn(MainScheduler.asyncInstance)
+      .distinctUntilChanged()
+      // Check the validation based on the interval set and also only on the main thread
+      .throttle(.milliseconds(throttleIntervalInMilliseconds), scheduler: MainScheduler.instance)
+      .map { [unowned self] in
+        // Check whether the text in the text field is valid
+        self.validate(cardText: $0)
     }
     
     creditCardValid
       .subscribe(onNext: { [unowned self] in
-        // Use the creditCardValid observable to set the text field valid or not	
+        // Use the creditCardValid observable to set the text field valid or not
         self.creditCardNumberTextField.valid = $0
       })
-    .disposed(by: disposeBag)
+      .disposed(by: disposeBag)
+    
+    // Reactive logic for the expiration text field
+    let expirationValid = expirationDateTextField
+      .rx
+      .text
+      .observeOn(MainScheduler.asyncInstance)
+      .distinctUntilChanged()
+      .throttle(.milliseconds(throttleIntervalInMilliseconds), scheduler: MainScheduler.instance)
+      .map { [unowned self] in
+        self.validate(expirationDateText: $0)
+    }
+    
+    expirationValid
+      .subscribe(onNext: { [unowned self] in
+        self.expirationDateTextField.valid = $0
+      })
+      .disposed(by: disposeBag)
+    
+    // Reactive logic for the cvv text field
+    let cvvValid = cvvTextField
+      .rx
+      .text
+      .observeOn(MainScheduler.asyncInstance)
+      .distinctUntilChanged()
+      .throttle(.milliseconds(throttleIntervalInMilliseconds), scheduler: MainScheduler.instance)
+      .map { [unowned self] in
+        self.validate(cvvText: $0)
+    }
+    
+    cvvValid
+      .subscribe(onNext: { [unowned self] in
+        self.cvvTextField.valid = $0
+      })
+      .disposed(by: disposeBag)
+    
+    // Reactive to combine results of all the observables as one
+    let everythingValid = Observable
+      // Combines the results together to return an observable bool
+      .combineLatest(creditCardValid, expirationValid, cvvValid) {
+        $0 && $1 && $2
+    }
+    
+    everythingValid
+      // Binds the observable bool to whether the purchase button is enabled or not
+      .bind(to: purchaseButton.rx.isEnabled)
+      .disposed(by: disposeBag)
+    
   }
+  
   
 }
 
