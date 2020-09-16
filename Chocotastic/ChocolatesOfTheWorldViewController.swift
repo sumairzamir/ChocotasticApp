@@ -119,47 +119,6 @@ private extension ChocolatesOfTheWorldViewController {
 
 //MARK: - Imperative methods
 private extension ChocolatesOfTheWorldViewController {
-//  func updateCartButton() {
-//    //    cartButton.title = "\(ShoppingCart.sharedCart.chocolates.count) 🍫"
-//    cartButton.title = "\(ShoppingCart.sharedCart.chocolates.value.count) 🍫"
-//  }
-}
-
-// MARK: - Table view data source
-//extension ChocolatesOfTheWorldViewController: UITableViewDataSource {
-//  func numberOfSections(in tableView: UITableView) -> Int {
-//    return 1
-//  }
-//
-//  func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//    return europeanChocolates.count
-//  }
-//
-//  func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//    guard let cell = tableView.dequeueReusableCell(withIdentifier: ChocolateCell.Identifier, for: indexPath) as? ChocolateCell else {
-//      //Something went wrong with the identifier.
-//      return UITableViewCell()
-//    }
-//
-//    let chocolate = europeanChocolates[indexPath.row]
-//    cell.configureWithChocolate(chocolate: chocolate)
-//
-//    return cell
-//  }
-//}
-
-// MARK: - Table view delegate
-//extension ChocolatesOfTheWorldViewController: UITableViewDelegate {
-//  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//    tableView.deselectRow(at: indexPath, animated: true)
-//
-//    let chocolate = europeanChocolates[indexPath.row]
-//    //    ShoppingCart.sharedCart.chocolates.append(chocolate)
-//    let newValue = ShoppingCart.sharedCart.chocolates.value + [chocolate]
-//    ShoppingCart.sharedCart.chocolates.accept(newValue)
-////    updateCartButton()
-//  }
-//}
 
 // MARK: - SegueHandler
 extension ChocolatesOfTheWorldViewController: SegueHandler {
